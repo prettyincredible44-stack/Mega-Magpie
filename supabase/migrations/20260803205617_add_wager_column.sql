@@ -1,0 +1,2 @@
+ALTER TABLE player_state
+  ADD COLUMN IF NOT EXISTS current_wager int NOT NULL DEFAULT 0;
