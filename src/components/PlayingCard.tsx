@@ -4,7 +4,6 @@ interface PlayingCardProps {
   card: CardType;
   onClick?: () => void;
   isTop?: boolean;
-  draggable?: boolean;
   highlight?: boolean;
   cardBackId?: string;
 }
@@ -16,25 +15,28 @@ const SUIT_SYMBOLS: Record<string, string> = {
   spades: '♠',
 };
 
+const CARD_GRADIENTS: Record<string, string> = {
+  classic: 'from-slate-600 to-slate-800',
+  ruby: 'from-red-500 to-red-800',
+  sapphire: 'from-blue-500 to-blue-800',
+  emerald: 'from-emerald-500 to-emerald-800',
+  gold: 'from-amber-400 to-amber-700',
+  cosmic: 'from-indigo-500 to-purple-800',
+  rose: 'from-rose-400 to-rose-700',
+  ocean: 'from-cyan-400 to-teal-700',
+};
+
 export default function PlayingCard({ card, onClick, isTop, highlight, cardBackId = 'classic' }: PlayingCardProps) {
+  const gradient = CARD_GRADIENTS[cardBackId] ?? CARD_GRADIENTS.classic;
+
   if (!card.faceUp) {
-    const gradients: Record<string, string> = {
-      classic: 'from-slate-700 to-slate-900',
-      ruby: 'from-red-600 to-red-900',
-      sapphire: 'from-blue-600 to-blue-900',
-      emerald: 'from-emerald-500 to-emerald-800',
-      gold: 'from-amber-400 to-amber-700',
-      cosmic: 'from-indigo-500 to-purple-800',
-      rose: 'from-rose-400 to-rose-700',
-      ocean: 'from-cyan-400 to-teal-700',
-    };
     return (
       <div
         onClick={onClick}
-        className={`w-12 h-16 sm:w-14 sm:h-20 rounded-lg bg-gradient-to-br ${gradients[cardBackId] || gradients.classic} border-2 border-slate-500/50 shadow-md cursor-pointer flex items-center justify-center`}
+        className={`flex h-[72px] w-full cursor-pointer items-center justify-center rounded-xl bg-gradient-to-br ${gradient} border-2 border-white/10 shadow ${highlight ? 'ring-2 ring-cozy-400' : ''}`}
       >
-        <div className="w-8 h-12 sm:w-10 sm:h-14 border border-white/20 rounded-md flex items-center justify-center">
-          <span className="text-white/30 text-lg">✦</span>
+        <div className="flex h-[56px] w-[calc(100%-10px)] items-center justify-center rounded-lg border border-white/15">
+          <span className="text-white/25 text-base">✦</span>
         </div>
       </div>
     );
@@ -46,20 +48,20 @@ export default function PlayingCard({ card, onClick, isTop, highlight, cardBackI
   return (
     <div
       onClick={onClick}
-      className={`w-12 h-16 sm:w-14 sm:h-20 rounded-lg bg-white shadow-md cursor-pointer flex flex-col justify-between p-1 transition-all ${
-        highlight ? 'ring-2 ring-cozy-400 scale-105' : ''
-      } ${isTop ? 'shadow-lg' : ''}`}
+      className={`flex h-[72px] w-full cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-1.5 shadow transition-transform active:scale-95 ${
+        highlight ? 'ring-2 ring-cozy-400 ring-offset-1' : ''
+      } ${isTop ? 'shadow-md' : ''}`}
     >
-      <div className={`text-xs sm:text-sm font-bold ${isRed ? 'text-red-500' : 'text-slate-900'} leading-none`}>
-        <span>{card.rank}</span>
-        <span className="ml-0.5">{symbol}</span>
+      <div className={`text-[11px] font-bold leading-none ${isRed ? 'text-red-500' : 'text-slate-900'}`}>
+        {card.rank}
+        <span className="ml-px">{symbol}</span>
       </div>
-      <div className={`text-lg sm:text-2xl ${isRed ? 'text-red-500' : 'text-slate-900'} text-center leading-none`}>
+      <div className={`text-center text-[20px] leading-none ${isRed ? 'text-red-500' : 'text-slate-900'}`}>
         {symbol}
       </div>
-      <div className={`text-xs sm:text-sm font-bold ${isRed ? 'text-red-500' : 'text-slate-900'} leading-none text-right rotate-180`}>
-        <span>{card.rank}</span>
-        <span className="ml-0.5">{symbol}</span>
+      <div className={`text-right text-[11px] font-bold leading-none rotate-180 ${isRed ? 'text-red-500' : 'text-slate-900'}`}>
+        {card.rank}
+        <span className="ml-px">{symbol}</span>
       </div>
     </div>
   );

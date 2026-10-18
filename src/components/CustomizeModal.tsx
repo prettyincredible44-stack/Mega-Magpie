@@ -8,9 +8,10 @@ interface CustomizeModalProps {
   ownedItems: Set<string>;
   onClose: () => void;
   onSelect: (type: 'card_back' | 'character' | 'outfit', id: string) => void;
+  onBuy?: (type: 'card_back' | 'character' | 'outfit', id: string, cost: number) => void;
 }
 
-export default function CustomizeModal({ state, ownedItems, onClose, onSelect }: CustomizeModalProps) {
+export default function CustomizeModal({ state, ownedItems, onClose, onSelect, onBuy }: CustomizeModalProps) {
   const outfits = getOutfitsForCharacter(state.active_character);
 
   return (
@@ -36,6 +37,8 @@ export default function CustomizeModal({ state, ownedItems, onClose, onSelect }:
                     if (owned) {
                       sounds.click();
                       onSelect('character', char.id);
+                    } else if (onBuy) {
+                      onBuy('character', char.id, char.price);
                     }
                   }}
                   className={`p-3 rounded-xl border transition flex flex-col items-center gap-1 ${
@@ -63,6 +66,8 @@ export default function CustomizeModal({ state, ownedItems, onClose, onSelect }:
                     if (owned) {
                       sounds.click();
                       onSelect('outfit', outfit.id);
+                    } else if (onBuy) {
+                      onBuy('outfit', outfit.id, outfit.price);
                     }
                   }}
                   className={`p-3 rounded-xl border transition flex flex-col items-center gap-1 ${
@@ -89,6 +94,8 @@ export default function CustomizeModal({ state, ownedItems, onClose, onSelect }:
                     if (owned) {
                       sounds.click();
                       onSelect('card_back', back.id);
+                    } else if (onBuy) {
+                      onBuy('card_back', back.id, back.price);
                     }
                   }}
                   className={`p-2 rounded-xl border transition flex flex-col items-center gap-1 ${

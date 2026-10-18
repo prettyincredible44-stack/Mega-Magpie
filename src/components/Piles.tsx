@@ -8,43 +8,81 @@ interface PileProps {
   highlightTo?: string;
   cardBackId?: string;
   type: 'tableau' | 'foundation' | 'stock' | 'waste';
+  selectedPile?: string | null;
+  selectedCardIndex?: number | null;
 }
 
-export default function Pile({ cards, pileId, onCardClick, highlightTo, cardBackId, type }: PileProps) {
+const FACE_DOWN_OFFSET = 8;
+const FACE_UP_OFFSET = 22;
+
+export default function Pile({
+  cards,
+  pileId,
+  onCardClick,
+  highlightTo,
+  cardBackId,
+  type,
+  selectedPile,
+  selectedCardIndex,
+}: PileProps) {
   if (type === 'tableau') {
+    const stackHeight = cards.reduce(
+      (h, c, i) => h + (i < cards.length - 1 ? (c.faceUp ? FACE_UP_OFFSET : FACE_DOWN_OFFSET) : 0),
+      0
+    );
+
     return (
-      <div className="relative min-h-[80px]">
+      <div
+        className="relative w-full"
+        style={{ minHeight: 80, height: stackHeight + 72 }}
+      >
         {cards.length === 0 && (
-          <div className="w-12 h-16 sm:w-14 sm:h-20 rounded-lg border-2 border-dashed border-slate-600/50" />
-        )}
-        {cards.map((card, i) => (
           <div
-            key={card.id}
-            className="absolute"
-            style={{ top: `${i * 18}px`, zIndex: i }}
-          >
-            <PlayingCard
-              card={card}
-              isTop={i === cards.length - 1}
-              onClick={() => onCardClick(pileId, i)}
-              highlight={highlightTo === pileId}
-              cardBackId={cardBackId}
-            />
-          </div>
-        ))}
+            className="absolute left-0 top-0 h-[72px] w-full rounded-xl border-2 border-dashed border-slate-600/40"
+            onClick={() => onCardClick(pileId, -1)}
+          />
+        )}
+        {cards.map((card, i) => {
+          const offset = cards.slice(0, i).reduce(
+            (h, c, j) => h + (j < i ? (c.faceUp ? FACE_UP_OFFSET : FACE_DOWN_OFFSET) : 0),
+            0
+          );
+          const isSelected =
+            selectedPile === pileId && selectedCardIndex !== undefined && selectedCardIndex !== null && i >= selectedCardIndex;
+          const isHintSource = highlightTo === pileId;
+          return (
+            <div
+              key={card.id}
+              className="absolute left-0 w-full"
+              style={{ top: offset, zIndex: i + 1 }}
+            >
+              <PlayingCard
+                card={card}
+                isTop={i === cards.length - 1}
+                onClick={() => onCardClick(pileId, i)}
+                highlight={isSelected || isHintSource}
+                cardBackId={cardBackId}
+              />
+            </div>
+          );
+        })}
       </div>
     );
   }
 
+  const isEmpty = cards.length === 0;
   return (
     <div className="relative">
-      {cards.length === 0 && (
-        <div className="w-12 h-16 sm:w-14 sm:h-20 rounded-lg border-2 border-dashed border-slate-600/50 flex items-center justify-center">
-          {type === 'foundation' && <span className="text-slate-600 text-lg">A</span>}
-          {type === 'stock' && <span className="text-slate-600 text-lg">↻</span>}
+      {isEmpty && (
+        <div
+          className="flex h-[72px] w-full items-center justify-center rounded-xl border-2 border-dashed border-slate-600/40"
+          onClick={() => onCardClick(pileId, -1)}
+        >
+          {type === 'foundation' && <span className="text-lg font-bold text-slate-600">A</span>}
+          {type === 'stock' && <span className="text-lg text-slate-600">↻</span>}
         </div>
       )}
-      {cards.length > 0 && (
+      {!isEmpty && (
         <PlayingCard
           card={cards[cards.length - 1]}
           isTop

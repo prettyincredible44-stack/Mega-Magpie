@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Gift, Trophy, Wallet, Sparkles, Shield } from 'lucide-react';
+import { ChevronRight, Gift, Trophy, Sparkles, Palette } from 'lucide-react';
 import { sounds } from '@/lib/sounds';
 
 interface OnboardingScreenProps {
@@ -20,22 +20,16 @@ const STEPS = [
     color: '#fcd34d',
   },
   {
-    icon: Wallet,
-    title: 'Cash Milestones',
-    desc: 'Every 10 wins unlocks a cash milestone payout. Reach Level 10 for a £25 reward.',
+    icon: Palette,
+    title: 'Make It Yours',
+    desc: 'Unlock characters, outfits, and card backs using free points earned by playing.',
     color: '#10b981',
   },
   {
     icon: Sparkles,
-    title: 'Collect & Customize',
-    desc: 'Unlock characters, outfits, and card backs. Make the game yours.',
+    title: 'Play Your Way',
+    desc: 'Use hints, undo moves, and auto-finish when you want a smoother game.',
     color: '#14b8a6',
-  },
-  {
-    icon: Shield,
-    title: 'Play Safe',
-    desc: '18+ only. Set spending limits, take breaks, and play responsibly.',
-    color: '#3b82f6',
   },
 ];
 

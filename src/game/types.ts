@@ -104,20 +104,3 @@ export interface SpeedMatch {
   wagered: number;
   created_at: string;
 }
-
-export type WagerLevel = 0 | 50 | 100 | 200 | 500;
-
-export interface WagerOption {
-  value: WagerLevel;
-  label: string;
-  multiplier: number;
-  color: string;
-}
-
-export const WAGER_OPTIONS: WagerOption[] = [
-  { value: 0, label: 'Play Safe', multiplier: 0, color: '#10b981' },
-  { value: 50, label: 'Casual', multiplier: 2, color: '#3b82f6' },
-  { value: 100, label: 'Serious', multiplier: 3, color: '#f59e0b' },
-  { value: 200, label: 'High Roller', multiplier: 5, color: '#ef4444' },
-  { value: 500, label: 'Whale', multiplier: 10, color: '#a855f7' },
-];
