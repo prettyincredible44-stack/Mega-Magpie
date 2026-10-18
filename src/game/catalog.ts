@@ -38,7 +38,7 @@ export const CHARACTERS: Character[] = [
   { id: 'bella', name: 'Bella', emoji: '🐱', price: 800, color: '#3b82f6' },
   { id: 'rex', name: 'Rex', emoji: '🐶', price: 800, color: '#10b981' },
   { id: 'luna', name: 'Luna', emoji: '🦉', price: 1200, color: '#a855f7' },
-  { id: 'pip', name: 'Pip', name2: '', emoji: '🐦', price: 1500, color: '#fcd34d' } as any,
+  { id: 'pip', name: 'Pip', emoji: '🐦', price: 1500, color: '#fcd34d' },
   { id: 'zen', name: 'Zen', emoji: '🐼', price: 2000, color: '#64748b' },
 ];
 
@@ -58,12 +58,7 @@ export const OUTFITS: Outfit[] = [
   { id: 'samurai', name: 'Samurai Panda', characterId: 'zen', emoji: '⚔️', price: 800 },
 ];
 
-export const COIN_PACKS = [
-  { id: 'small', name: 'Handful', coins: 500, price: '$0.99', color: '#10b981' },
-  { id: 'medium', name: 'Pouch', coins: 1500, price: '$2.99', color: '#3b82f6' },
-  { id: 'large', name: 'Chest', coins: 5000, price: '$4.99', color: '#f59e0b' },
-  { id: 'mega', name: 'Treasure', coins: 15000, price: '$9.99', color: '#a855f7' },
-];
+export const COIN_PACKS: { id: string; name: string; coins: number; price: string; color: string }[] = [];
 
 export const TOKEN_PACKS = [
   { id: 't1', name: 'Token Pack', tokens: 10, price: 200, color: '#14b8a6' },

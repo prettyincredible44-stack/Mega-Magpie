@@ -1,59 +1,56 @@
-import { X, Coins, Sparkles } from 'lucide-react';
-import { COIN_PACKS, TOKEN_PACKS } from '@/game/catalog';
+import { X, Coins, Sparkles, Gift } from 'lucide-react';
+import { TOKEN_PACKS } from '@/game/catalog';
 import type { PlayerState } from '@/game/types';
 import { sounds } from '@/lib/sounds';
 
 interface ShopModalProps {
   state: PlayerState;
   onClose: () => void;
-  onBuyCoins: (packId: string) => void;
   onBuyTokens: (packId: string) => void;
 }
 
-export default function ShopModal({ state, onClose, onBuyCoins, onBuyTokens }: ShopModalProps) {
+// Points are earned by playing — no real money involved.
+// This shop lets players exchange earned points for bonus tokens (hint/undo fuel).
+export default function ShopModal({ state, onClose, onBuyTokens }: ShopModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-slate-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-4 border-b border-slate-700 sticky top-0 bg-slate-800 rounded-t-2xl">
-          <h2 className="text-xl font-bold text-white">Shop</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-700 transition">
-            <X className="w-5 h-5 text-slate-400" />
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-4 animate-fade-in" onClick={onClose}>
+      <div className="glass w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 glass flex items-center justify-between rounded-t-2xl border-b border-brand-800/60 p-4">
+          <div className="flex items-center gap-2">
+            <Gift className="h-5 w-5 text-gold-400" />
+            <h2 className="text-lg font-bold text-white">Exchange Points</h2>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 transition hover:bg-felt-600">
+            <X className="h-5 w-5 text-white/50" />
           </button>
         </div>
 
         <div className="p-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg border border-slate-700">
-              <Coins className="w-5 h-5 text-cozy-400" />
-              <span className="text-white font-bold">{state.coins.toLocaleString()}</span>
+          {/* Balances */}
+          <div className="mb-5 flex gap-3">
+            <div className="flex flex-1 items-center gap-2 rounded-xl border border-brand-800/50 bg-felt-700/60 px-3 py-2.5">
+              <Coins className="h-5 w-5 text-cozy-400" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-white/40">Points</p>
+                <p className="font-bold text-white tabular-nums">{state.coins.toLocaleString()}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg border border-slate-700">
-              <Sparkles className="w-5 h-5 text-magical-400" />
-              <span className="text-white font-bold">{state.tokens}</span>
+            <div className="flex flex-1 items-center gap-2 rounded-xl border border-brand-800/50 bg-felt-700/60 px-3 py-2.5">
+              <Sparkles className="h-5 w-5 text-brand-400" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-white/40">Tokens</p>
+                <p className="font-bold text-white tabular-nums">{state.tokens}</p>
+              </div>
             </div>
           </div>
 
-          <h3 className="text-white font-semibold mb-3">Coin Packs</h3>
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {COIN_PACKS.map((pack) => (
-              <button
-                key={pack.id}
-                onClick={() => {
-                  sounds.coin();
-                  onBuyCoins(pack.id);
-                }}
-                className="p-4 rounded-xl border border-slate-600 bg-slate-700/50 hover:border-slate-500 hover:bg-slate-700 transition flex flex-col items-center gap-2"
-              >
-                <Coins className="w-8 h-8" style={{ color: pack.color }} />
-                <span className="text-white font-bold">{pack.coins.toLocaleString()}</span>
-                <span className="text-slate-300 text-sm">{pack.name}</span>
-                <span className="text-cozy-400 font-semibold text-sm">{pack.price}</span>
-              </button>
-            ))}
-          </div>
+          <p className="mb-4 text-sm text-white/50">
+            Use points you've earned by playing to buy hint and undo tokens.
+          </p>
 
-          <h3 className="text-white font-semibold mb-3">Token Packs</h3>
-          <div className="grid grid-cols-3 gap-3">
+          {/* Token exchange */}
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-400/80">Token Bundles</h3>
+          <div className="space-y-2">
             {TOKEN_PACKS.map((pack) => {
               const canAfford = state.coins >= pack.price;
               return (
@@ -64,16 +61,33 @@ export default function ShopModal({ state, onClose, onBuyCoins, onBuyTokens }: S
                     sounds.coin();
                     onBuyTokens(pack.id);
                   }}
-                  className="p-3 rounded-xl border border-slate-600 bg-slate-700/50 hover:border-slate-500 hover:bg-slate-700 transition flex flex-col items-center gap-1 disabled:opacity-40"
+                  className={`flex w-full items-center justify-between rounded-xl border p-3.5 transition active:scale-95 ${
+                    canAfford
+                      ? 'border-brand-700/40 bg-felt-700/60 hover:border-brand-500/60'
+                      : 'border-felt-600/30 bg-felt-800/50 opacity-40'
+                  }`}
                 >
-                  <Sparkles className="w-6 h-6" style={{ color: pack.color }} />
-                  <span className="text-white font-bold">{pack.tokens}</span>
-                  <span className="text-slate-300 text-xs">{pack.name}</span>
-                  <span className="text-cozy-400 text-xs">{pack.price}c</span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20">
+                      <Sparkles className="h-5 w-5 text-brand-300" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-white">{pack.tokens} Tokens</p>
+                      <p className="text-xs text-white/40">{pack.name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-lg border border-cozy-500/30 bg-cozy-500/10 px-3 py-1.5">
+                    <Coins className="h-3.5 w-3.5 text-cozy-400" />
+                    <span className="text-sm font-bold text-cozy-300">{pack.price.toLocaleString()}</span>
+                  </div>
                 </button>
               );
             })}
           </div>
+
+          <p className="mt-4 text-center text-xs text-white/30">
+            Earn more points by winning games and logging in daily.
+          </p>
         </div>
       </div>
     </div>

@@ -40,7 +40,7 @@ export function getLevelProgress(xp: number): { current: number; needed: number;
   return { current, needed, percent: Math.min(100, (current / needed) * 100) };
 }
 
-export function getMilestonePence(level: number): number {
+export function getMilestoneBonus(level: number): number {
   if (level >= 1 && level <= 3) return 50;
   if (level >= 4 && level <= 6) return 150;
   if (level >= 7 && level <= 9) return 300;

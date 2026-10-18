@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { GameState } from '@/game/types';
 import Pile from './Piles';
 import BoostBar from './BoostBar';
-import { formatTime } from '@/game/engine';
-import { canPlaceOnFoundation, canPlaceOnTableau } from '@/game/engine';
+import { formatTime, canPlaceOnFoundation } from '@/game/engine';
 import { Timer, Hash } from 'lucide-react';
 
 interface GameBoardProps {
@@ -38,42 +37,33 @@ export default function GameBoard({
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (gameState.isPlaying) {
-      const id = window.setInterval(
-        () => setElapsed(Math.floor((Date.now() - gameState.startTime) / 1000)),
-        500
-      );
-      timerRef.current = id;
-      return () => clearInterval(id);
-    }
+    if (!gameState.isPlaying) return;
+    const id = window.setInterval(
+      () => setElapsed(Math.floor((Date.now() - gameState.startTime) / 1000)),
+      500,
+    );
+    timerRef.current = id;
+    return () => clearInterval(id);
   }, [gameState.isPlaying, gameState.startTime]);
 
-  // When a new game starts, reset selection and timer
   useEffect(() => {
     setSelected(null);
     setElapsed(0);
   }, [gameState.startTime]);
 
-  function tryAutoSendToFoundation(pileId: string, cardIndex: number): boolean {
-    const getCard = () => {
-      if (pileId === 'waste') return gameState.waste[gameState.waste.length - 1];
-      if (pileId.startsWith('tableau-')) {
-        const col = parseInt(pileId.split('-')[1], 10);
-        const pile = gameState.tableau[col];
-        if (pile[cardIndex]?.faceUp) return pile[cardIndex];
-        return undefined;
-      }
-      return undefined;
-    };
-    const card = getCard();
-    if (!card) return false;
-    // Only auto-send top card of waste or top card of tableau column
-    const isTopCard =
-      pileId === 'waste'
-        ? cardIndex === gameState.waste.length - 1
-        : cardIndex === gameState.tableau[parseInt(pileId.split('-')[1], 10)].length - 1;
-    if (!isTopCard) return false;
-
+  /** Try sending the top card of a pile directly to a foundation. Returns true on success. */
+  function tryAutoFoundation(pileId: string, cardIndex: number): boolean {
+    let card = undefined;
+    if (pileId === 'waste') {
+      card = gameState.waste[gameState.waste.length - 1];
+      if (cardIndex !== gameState.waste.length - 1) return false;
+    } else if (pileId.startsWith('tableau-')) {
+      const col = parseInt(pileId.split('-')[1], 10);
+      const pile = gameState.tableau[col];
+      if (cardIndex !== pile.length - 1) return false;
+      card = pile[cardIndex];
+    }
+    if (!card?.faceUp) return false;
     for (let f = 0; f < 4; f++) {
       if (canPlaceOnFoundation(card, gameState.foundations[f])) {
         onMove(pileId, `foundation-${f}`, cardIndex);
@@ -90,10 +80,8 @@ export default function GameBoard({
       return;
     }
 
-    // If something is already selected, try to move it here
     if (selected) {
       if (selected.pile === pileId) {
-        // Same pile — deselect
         setSelected(null);
         return;
       }
@@ -102,10 +90,10 @@ export default function GameBoard({
       return;
     }
 
-    // Nothing selected — try auto-send to foundation first (double-click feel via single click when only one valid dest)
-    if (tryAutoSendToFoundation(pileId, cardIndex)) return;
+    // Auto-send to foundation on single tap if that's the only valid move
+    if (tryAutoFoundation(pileId, cardIndex)) return;
 
-    // Otherwise select
+    // Select the card
     const card = (() => {
       if (pileId === 'waste') return gameState.waste[gameState.waste.length - 1];
       if (pileId.startsWith('tableau-')) {
@@ -118,99 +106,93 @@ export default function GameBoard({
     setSelected({ pile: pileId, cardIndex });
   };
 
-  const handleFoundationClick = (foundationId: string) => {
+  const handleFoundationClick = (fId: string) => {
     if (!selected) return;
-    onMove(selected.pile, foundationId, selected.cardIndex);
+    onMove(selected.pile, fId, selected.cardIndex);
     setSelected(null);
   };
 
-  const colWidths = 'grid-cols-7';
+  const hintFrom = hintTarget?.from;
+  const hintTo   = hintTarget?.to;
 
   return (
-    <div className="flex flex-col gap-2 px-1 pt-2 pb-4 max-w-6xl mx-auto w-full">
-      {/* Stats bar */}
-      <div className="flex items-center gap-2 px-1">
-        <div className="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">
-          <Timer className="w-3.5 h-3.5 text-magical-400" />
-          <span className="text-white text-xs font-mono">{formatTime(elapsed)}</span>
-        </div>
-        <div className="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">
-          <Hash className="w-3.5 h-3.5 text-cozy-400" />
-          <span className="text-white text-xs font-mono">{gameState.moves}</span>
-        </div>
-        {selected && (
-          <span className="text-cozy-400 text-xs animate-pulse ml-1">Card selected — tap destination</span>
-        )}
-      </div>
+    <div
+      className="felt-surface min-h-screen w-full"
+      style={{ '--board-pad': '12px' } as React.CSSProperties}
+    >
+      <div className="mx-auto max-w-3xl w-full px-[var(--board-pad,12px)] pt-3 pb-6 flex flex-col gap-2">
 
-      {/* Top row: stock / waste / gap / foundations */}
-      <div className={`grid ${colWidths} gap-1.5 px-1`}>
-        {/* Stock */}
-        <div>
-          <Pile cards={gameState.stock} pileId="stock" type="stock" onCardClick={handlePileClick} cardBackId={cardBackId} />
-        </div>
-        {/* Waste */}
-        <div>
-          <Pile
-            cards={gameState.waste}
-            pileId="waste"
-            type="waste"
-            onCardClick={handlePileClick}
-            cardBackId={cardBackId}
-            highlightTo={hintTarget?.from === 'waste' ? 'waste' : undefined}
-            selectedPile={selected?.pile}
-            selectedCardIndex={selected?.cardIndex}
-          />
-        </div>
-        {/* Spacer */}
-        <div />
-        {/* 4 Foundations */}
-        {gameState.foundations.map((f, i) => (
-          <div key={i} onClick={() => handleFoundationClick(`foundation-${i}`)}>
-            <Pile
-              cards={f}
-              pileId={`foundation-${i}`}
-              type="foundation"
-              onCardClick={handlePileClick}
-              cardBackId={cardBackId}
-              highlightTo={hintTarget?.to === `foundation-${i}` ? `foundation-${i}` : undefined}
-            />
+        {/* Stats bar */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-lg border border-brand-700/50 bg-felt-700/60 px-2.5 py-1.5">
+            <Timer className="w-3.5 h-3.5 text-brand-400" />
+            <span className="text-white/90 text-xs font-mono tabular-nums">{formatTime(elapsed)}</span>
           </div>
-        ))}
-      </div>
+          <div className="flex items-center gap-1.5 rounded-lg border border-brand-700/50 bg-felt-700/60 px-2.5 py-1.5">
+            <Hash className="w-3.5 h-3.5 text-gold-400" />
+            <span className="text-white/90 text-xs font-mono tabular-nums">{gameState.moves}</span>
+          </div>
+          {selected && (
+            <span className="text-brand-300 text-xs animate-pulse ml-auto pr-1">Tap destination ↓</span>
+          )}
+        </div>
 
-      {/* Tableau */}
-      <div className={`grid ${colWidths} gap-1.5 px-1 mt-1`}>
-        {gameState.tableau.map((pile, col) => (
-          <Pile
-            key={col}
-            cards={pile}
-            pileId={`tableau-${col}`}
-            type="tableau"
-            onCardClick={handlePileClick}
-            cardBackId={cardBackId}
-            highlightTo={
-              hintTarget?.from === `tableau-${col}` || hintTarget?.to === `tableau-${col}`
-                ? `tableau-${col}`
-                : undefined
-            }
+        {/* Top row: stock | waste | spacer | foundation×4 */}
+        <div className="grid grid-cols-7 gap-[var(--board-gap,6px)]" style={{ '--board-gap': '6px' } as React.CSSProperties}>
+          <Pile cards={gameState.stock} pileId="stock" type="stock"
+            onCardClick={handlePileClick} cardBackId={cardBackId} />
+
+          <Pile cards={gameState.waste} pileId="waste" type="waste"
+            onCardClick={handlePileClick} cardBackId={cardBackId}
+            highlightTo={hintFrom === 'waste' ? 'waste' : undefined}
             selectedPile={selected?.pile}
-            selectedCardIndex={selected?.cardIndex}
-          />
-        ))}
-      </div>
+            selectedCardIndex={selected?.cardIndex} />
 
-      {/* Boost bar */}
-      <div className="px-1">
-        <BoostBar
-          onHint={onHint}
-          onUndo={onUndo}
-          onAutoFinish={onAutoFinish}
-          onNewGame={onNewGame}
-          gameState={gameState}
-          hintCost={hintCost}
-          undoCost={undoCost}
-        />
+          {/* Gap */}
+          <div />
+
+          {gameState.foundations.map((f, i) => (
+            <div key={i} onClick={() => handleFoundationClick(`foundation-${i}`)}>
+              <Pile cards={f} pileId={`foundation-${i}`} type="foundation"
+                onCardClick={handlePileClick} cardBackId={cardBackId}
+                highlightTo={hintTo === `foundation-${i}` ? `foundation-${i}` : undefined} />
+            </div>
+          ))}
+        </div>
+
+        {/* Tableau */}
+        <div className="grid grid-cols-7 gap-[6px] mt-1">
+          {gameState.tableau.map((pile, col) => {
+            const pid = `tableau-${col}`;
+            const hl = hintFrom === pid || hintTo === pid ? pid : undefined;
+            return (
+              <Pile
+                key={col}
+                cards={pile}
+                pileId={pid}
+                type="tableau"
+                onCardClick={handlePileClick}
+                cardBackId={cardBackId}
+                highlightTo={hl}
+                selectedPile={selected?.pile}
+                selectedCardIndex={selected?.cardIndex}
+              />
+            );
+          })}
+        </div>
+
+        {/* Controls */}
+        <div className="mt-2">
+          <BoostBar
+            onHint={onHint}
+            onUndo={onUndo}
+            onAutoFinish={onAutoFinish}
+            onNewGame={onNewGame}
+            gameState={gameState}
+            hintCost={hintCost}
+            undoCost={undoCost}
+          />
+        </div>
       </div>
     </div>
   );

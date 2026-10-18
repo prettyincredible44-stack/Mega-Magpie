@@ -6,14 +6,65 @@
   html {
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
+    font-size: 16px;
   }
   body {
-    @apply bg-slate-950 text-white antialiased;
+    background-color: #0a1f1c;
+    color: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
     user-select: none;
     -webkit-user-select: none;
+    overflow-x: hidden;
   }
   * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  /* felt texture on game surface */
+  .felt-surface {
+    background-color: #0f2924;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(20,184,166,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.04) 0%, transparent 50%);
+  }
+
+  /* card face */
+  .card-face {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.12);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.06);
+  }
+
+  /* card back */
+  .card-back {
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  /* card selected ring */
+  .card-selected {
+    box-shadow: 0 0 0 2.5px #2dd4bf, 0 4px 14px rgba(45,212,191,0.45) !important;
+    transform: translateY(-2px);
+  }
+
+  /* empty pile slot */
+  .pile-slot {
+    border-radius: 8px;
+    border: 1.5px dashed rgba(45,212,191,0.25);
+  }
+
+  /* glass panel */
+  .glass {
+    background: rgba(15,41,36,0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(45,212,191,0.15);
   }
 }

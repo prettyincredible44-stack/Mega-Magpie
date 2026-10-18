@@ -6,6 +6,7 @@ interface PlayingCardProps {
   isTop?: boolean;
   highlight?: boolean;
   cardBackId?: string;
+  dimmed?: boolean;
 }
 
 const SUIT_SYMBOLS: Record<string, string> = {
@@ -15,53 +16,66 @@ const SUIT_SYMBOLS: Record<string, string> = {
   spades: '♠',
 };
 
-const CARD_GRADIENTS: Record<string, string> = {
-  classic: 'from-slate-600 to-slate-800',
-  ruby: 'from-red-500 to-red-800',
-  sapphire: 'from-blue-500 to-blue-800',
-  emerald: 'from-emerald-500 to-emerald-800',
-  gold: 'from-amber-400 to-amber-700',
-  cosmic: 'from-indigo-500 to-purple-800',
-  rose: 'from-rose-400 to-rose-700',
-  ocean: 'from-cyan-400 to-teal-700',
+const BACK_STYLES: Record<string, { from: string; to: string; pattern: string }> = {
+  classic:   { from: '#1e3a35', to: '#0d2420', pattern: '✦' },
+  ruby:      { from: '#7f1d1d', to: '#450a0a', pattern: '♦' },
+  sapphire:  { from: '#1e3a8a', to: '#172554', pattern: '♠' },
+  emerald:   { from: '#14532d', to: '#052e16', pattern: '♣' },
+  gold:      { from: '#92400e', to: '#451a03', pattern: '★' },
+  cosmic:    { from: '#3b0764', to: '#1e1b4b', pattern: '✦' },
+  rose:      { from: '#881337', to: '#4c0519', pattern: '♥' },
+  ocean:     { from: '#155e75', to: '#083344', pattern: '≈' },
 };
 
-export default function PlayingCard({ card, onClick, isTop, highlight, cardBackId = 'classic' }: PlayingCardProps) {
-  const gradient = CARD_GRADIENTS[cardBackId] ?? CARD_GRADIENTS.classic;
+export default function PlayingCard({ card, onClick, isTop, highlight, cardBackId = 'classic', dimmed }: PlayingCardProps) {
+  const backStyle = BACK_STYLES[cardBackId] ?? BACK_STYLES.classic;
 
   if (!card.faceUp) {
     return (
       <div
         onClick={onClick}
-        className={`flex h-[72px] w-full cursor-pointer items-center justify-center rounded-xl bg-gradient-to-br ${gradient} border-2 border-white/10 shadow ${highlight ? 'ring-2 ring-cozy-400' : ''}`}
+        className={`card-back w-full h-full cursor-pointer transition-transform active:scale-95 ${dimmed ? 'opacity-40' : ''}`}
+        style={{ background: `linear-gradient(135deg, ${backStyle.from}, ${backStyle.to})` }}
       >
-        <div className="flex h-[56px] w-[calc(100%-10px)] items-center justify-center rounded-lg border border-white/15">
-          <span className="text-white/25 text-base">✦</span>
+        <div
+          className="w-full h-full rounded-lg flex items-center justify-center"
+          style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <div
+            className="rounded-md flex items-center justify-center"
+            style={{ width: 'calc(100% - 8px)', height: 'calc(100% - 8px)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.9em' }}>{backStyle.pattern}</span>
+          </div>
         </div>
       </div>
     );
   }
 
   const isRed = card.color === 'red';
-  const symbol = SUIT_SYMBOLS[card.suit];
+  const sym = SUIT_SYMBOLS[card.suit];
+  const textColor = isRed ? '#dc2626' : '#111827';
 
   return (
     <div
       onClick={onClick}
-      className={`flex h-[72px] w-full cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-1.5 shadow transition-transform active:scale-95 ${
-        highlight ? 'ring-2 ring-cozy-400 ring-offset-1' : ''
-      } ${isTop ? 'shadow-md' : ''}`}
+      className={`card-face w-full h-full cursor-pointer flex flex-col justify-between p-[3px] transition-all active:scale-95 ${
+        highlight ? 'card-selected' : ''
+      } ${isTop ? 'shadow-card-hover' : ''} ${dimmed ? 'opacity-50' : ''}`}
     >
-      <div className={`text-[11px] font-bold leading-none ${isRed ? 'text-red-500' : 'text-slate-900'}`}>
-        {card.rank}
-        <span className="ml-px">{symbol}</span>
+      {/* Top rank+suit */}
+      <div className="leading-none" style={{ color: textColor }}>
+        <div style={{ fontSize: 'clamp(9px, 2.2vw, 13px)', fontWeight: 700, lineHeight: 1 }}>{card.rank}</div>
+        <div style={{ fontSize: 'clamp(8px, 2vw, 11px)', lineHeight: 1 }}>{sym}</div>
       </div>
-      <div className={`text-center text-[20px] leading-none ${isRed ? 'text-red-500' : 'text-slate-900'}`}>
-        {symbol}
+      {/* Center suit */}
+      <div className="text-center leading-none" style={{ color: textColor, fontSize: 'clamp(14px, 3.5vw, 20px)' }}>
+        {sym}
       </div>
-      <div className={`text-right text-[11px] font-bold leading-none rotate-180 ${isRed ? 'text-red-500' : 'text-slate-900'}`}>
-        {card.rank}
-        <span className="ml-px">{symbol}</span>
+      {/* Bottom rank+suit (rotated) */}
+      <div className="leading-none rotate-180" style={{ color: textColor }}>
+        <div style={{ fontSize: 'clamp(9px, 2.2vw, 13px)', fontWeight: 700, lineHeight: 1 }}>{card.rank}</div>
+        <div style={{ fontSize: 'clamp(8px, 2vw, 11px)', lineHeight: 1 }}>{sym}</div>
       </div>
     </div>
   );

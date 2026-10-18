@@ -4,14 +4,14 @@ import { sounds } from '@/lib/sounds';
 
 interface SpeedMatchModalProps {
   onClose: () => void;
-  onComplete: (score: number, won: boolean, wagered: number) => void;
+  onComplete: (score: number, won: boolean, tokensUsed: number) => void;
   tokens: number;
 }
 
 const SEQUENCE_LENGTH = 5;
 const TIME_LIMIT = 30;
 
-export default function SpeedMatchModal({ onClose, onComplete, tokens }: SpeedMatchModalProps) {
+export default function SpeedMatchModal({ onClose, onComplete }: SpeedMatchModalProps) {
   const [phase, setPhase] = useState<'menu' | 'playing' | 'done'>('menu');
   const [sequence, setSequence] = useState<number[]>([]);
   const [userInput, setUserInput] = useState<number[]>([]);
@@ -68,17 +68,17 @@ export default function SpeedMatchModal({ onClose, onComplete, tokens }: SpeedMa
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={phase === 'menu' || phase === 'done' ? onClose : undefined}>
-      <div className="bg-slate-800 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="glass w-full max-w-sm rounded-2xl shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>
         {phase === 'menu' && (
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Speed Match</h2>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-700 transition">
-                <X className="w-5 h-5 text-slate-400" />
+              <button onClick={onClose} className="rounded-lg p-1.5 transition hover:bg-felt-600">
+                <X className="w-5 h-5 text-white/50" />
               </button>
             </div>
-            <p className="text-slate-300 text-sm mb-4">Watch the sequence, then repeat it before time runs out. Each round gets harder!</p>
-            <button onClick={() => { sounds.click(); startRound(); }} className="w-full flex items-center justify-center gap-2 py-3 bg-cozy-500 hover:bg-cozy-600 text-white rounded-lg font-bold transition">
+            <p className="text-white/60 text-sm mb-4">Watch the sequence, then repeat it before time runs out. Each round gets harder!</p>
+            <button onClick={() => { sounds.click(); startRound(); }} className="w-full flex items-center justify-center gap-2 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold transition active:scale-95">
               <Play className="w-4 h-4" /> Start
             </button>
           </div>
@@ -90,7 +90,7 @@ export default function SpeedMatchModal({ onClose, onComplete, tokens }: SpeedMa
               <span className="text-white font-semibold">Round {round}</span>
               <span className="text-white">Score: {score}</span>
               <div className="flex items-center gap-1">
-                <Timer className="w-4 h-4 text-magical-400" />
+                <Timer className="w-4 h-4 text-gold-400" />
                 <span className="text-white font-mono">{timeLeft}s</span>
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function SpeedMatchModal({ onClose, onComplete, tokens }: SpeedMa
                 <button
                   key={idx}
                   onClick={() => handleClick(idx)}
-                  className="aspect-square rounded-xl border-2 border-slate-600 hover:scale-105 transition active:scale-95"
+                  className="aspect-square rounded-xl border-2 border-brand-800/40 hover:scale-105 transition active:scale-95"
                   style={{ background: color }}
                 />
               ))}
@@ -116,7 +116,7 @@ export default function SpeedMatchModal({ onClose, onComplete, tokens }: SpeedMa
                 return (
                   <div
                     key={idx}
-                    className="aspect-square rounded-xl border-2 border-slate-600 transition-all"
+                    className="aspect-square rounded-xl border-2 border-brand-800/40 transition-all"
                     style={{ background: color, opacity: isLit ? 1 : 0.3, transform: isLit ? 'scale(1.05)' : 'scale(1)' }}
                   />
                 );
@@ -128,12 +128,12 @@ export default function SpeedMatchModal({ onClose, onComplete, tokens }: SpeedMa
         {phase === 'done' && (
           <div className="p-6 text-center">
             <h2 className="text-xl font-bold text-white mb-2">Game Over</h2>
-            <p className="text-slate-300 mb-1">Final Score: {score}</p>
+            <p className="text-white/60 mb-1">Final Score: {score}</p>
             <div className="flex gap-2 mt-4">
-              <button onClick={() => { setScore(0); setRound(0); setPhase('menu'); }} className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition">
+              <button onClick={() => { setScore(0); setRound(0); setPhase('menu'); }} className="flex-1 flex items-center justify-center gap-2 py-3 bg-felt-700 hover:bg-felt-600 text-white rounded-lg font-semibold transition">
                 <RotateCcw className="w-4 h-4" /> Retry
               </button>
-              <button onClick={() => { onComplete(score, score > 0, 0); onClose(); }} className="flex-1 py-3 bg-cozy-500 hover:bg-cozy-600 text-white rounded-lg font-bold transition">
+              <button onClick={() => { onComplete(score, score > 0, 0); onClose(); }} className="flex-1 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold transition active:scale-95">
                 Done
               </button>
             </div>

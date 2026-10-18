@@ -19,8 +19,9 @@ import LevelUpToast from '@/components/LevelUpToast';
 import LevelModal from '@/components/LevelModal';
 import SpeedMatchModal from '@/components/SpeedMatchModal';
 import LuckyPickModal from '@/components/LuckyPickModal';
+import PrivacyModal from '@/components/PrivacyModal';
 
-type ModalId = 'profile' | 'customize' | 'daily' | 'shop' | 'levelinfo' | 'speedmatch' | 'luckypick' | null;
+type ModalId = 'profile' | 'customize' | 'daily' | 'shop' | 'levelinfo' | 'speedmatch' | 'luckypick' | 'privacy' | null;
 
 const ONBOARDING_KEY = 'mms_onboarded_v1';
 
@@ -141,6 +142,8 @@ export default function App() {
         onProfile={() => setModal('profile')}
         onCustomize={() => setModal('customize')}
         onNewGame={handleNewGame}
+        onDailyReward={() => setModal('daily')}
+        dailyAvailable={!!showDailyPrompt}
       />
 
       <main className="w-full">
@@ -178,7 +181,7 @@ export default function App() {
 
       {/* Modals */}
       {activeModal === 'profile' && (
-        <ProfileModal state={state} onClose={() => setModal(null)} onSignOut={signOut} />
+        <ProfileModal state={state} onClose={() => setModal(null)} onSignOut={signOut} onPrivacy={() => setModal('privacy')} />
       )}
       {activeModal === 'customize' && (
         <CustomizeModal
@@ -196,7 +199,6 @@ export default function App() {
         <ShopModal
           state={state}
           onClose={() => setModal(null)}
-          onBuyCoins={() => {}}
           onBuyTokens={handleBuyTokens}
         />
       )}
@@ -209,6 +211,9 @@ export default function App() {
           onComplete={() => setModal(null)}
           tokens={state.tokens}
         />
+      )}
+      {activeModal === 'privacy' && (
+        <PrivacyModal onClose={() => setModal(null)} />
       )}
       {activeModal === 'luckypick' && (
         <LuckyPickModal
