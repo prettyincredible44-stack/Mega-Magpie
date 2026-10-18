@@ -1,4 +1,4 @@
-import { Coins, Sparkles, User, Trophy, Settings, RefreshCw, Gift } from 'lucide-react';
+import { Coins, Sparkles, User, Trophy, Settings, RefreshCw, Gift, Zap } from 'lucide-react';
 import type { PlayerState } from '@/game/types';
 import { getLevelInfo } from '@/game/levels';
 
@@ -9,9 +9,11 @@ interface HeaderProps {
   onNewGame: () => void;
   onDailyReward?: () => void;
   dailyAvailable?: boolean;
+  onBlitz?: () => void;
+  blitzActive?: boolean;
 }
 
-export default function Header({ state, onProfile, onCustomize, onNewGame, onDailyReward, dailyAvailable }: HeaderProps) {
+export default function Header({ state, onProfile, onCustomize, onNewGame, onDailyReward, dailyAvailable, onBlitz, blitzActive }: HeaderProps) {
   const levelInfo = getLevelInfo(state.level);
 
   return (
@@ -63,6 +65,15 @@ export default function Header({ state, onProfile, onCustomize, onNewGame, onDai
               title="Daily reward"
             >
               <Gift className="h-4 w-4" />
+            </button>
+          )}
+          {onBlitz && (
+            <button
+              onClick={onBlitz}
+              className={`rounded-lg p-2 transition hover:bg-felt-600 ${blitzActive ? 'text-magical-400' : 'text-white/60 hover:text-white'}`}
+              title="5 Minute Blitz"
+            >
+              <Zap className="h-4 w-4" />
             </button>
           )}
           <button onClick={onCustomize} className="rounded-lg p-2 text-white/60 transition hover:bg-felt-600 hover:text-white" title="Customize">

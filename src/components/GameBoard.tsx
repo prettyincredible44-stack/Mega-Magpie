@@ -3,7 +3,7 @@ import type { GameState } from '@/game/types';
 import Pile from './Piles';
 import BoostBar from './BoostBar';
 import { formatTime, canPlaceOnFoundation } from '@/game/engine';
-import { Timer, Hash } from 'lucide-react';
+import { Timer, Hash, Zap, Trophy } from 'lucide-react';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -17,6 +17,9 @@ interface GameBoardProps {
   cardBackId: string;
   hintCost: number;
   undoCost: number;
+  blitzActive?: boolean;
+  blitzTimeLeft?: number;
+  blitzGamesCleared?: number;
 }
 
 export default function GameBoard({
@@ -31,6 +34,9 @@ export default function GameBoard({
   cardBackId,
   hintCost,
   undoCost,
+  blitzActive = false,
+  blitzTimeLeft = 0,
+  blitzGamesCleared = 0,
 }: GameBoardProps) {
   const [selected, setSelected] = useState<{ pile: string; cardIndex: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -121,6 +127,24 @@ export default function GameBoard({
       style={{ '--board-pad': '12px' } as React.CSSProperties}
     >
       <div className="mx-auto max-w-3xl w-full px-[var(--board-pad,12px)] pt-3 pb-6 flex flex-col gap-2">
+
+        {/* Blitz mode bar */}
+        {blitzActive && (
+          <div className="flex items-center justify-between rounded-xl border border-magical-600/50 bg-gradient-to-r from-magical-900/80 to-brand-900/80 px-4 py-2.5 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-magical-400 animate-pulse" />
+              <div className="flex items-center gap-1.5">
+                <Trophy className="h-4 w-4 text-gold-400" />
+                <span className="text-sm font-bold text-gold-300 tabular-nums">{blitzGamesCleared}</span>
+                <span className="text-xs text-white/50">cleared</span>
+              </div>
+            </div>
+            <div className={`flex items-center gap-1.5 ${blitzTimeLeft <= 30 ? 'text-red-400' : 'text-white'}`}>
+              <Timer className="h-5 w-5" />
+              <span className="text-lg font-bold tabular-nums">{formatTime(blitzTimeLeft)}</span>
+            </div>
+          </div>
+        )}
 
         {/* Stats bar */}
         <div className="flex items-center gap-2">
